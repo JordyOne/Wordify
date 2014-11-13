@@ -39,7 +39,7 @@ class Converter
   TENS = {
       2 => "Twenty",
       3 => "Thirty",
-      4 => "Fourty",
+      4 => "Forty",
       5 => "Fifty",
       6 => "Sixty",
       7 => "Seventy",
@@ -69,12 +69,8 @@ class Converter
     num_arr = number.split('')
     arr_of_threes = self.slice_num_arr(num_arr)
     word_string = []
-    @and_setter = false
 
     arr_of_threes.each_with_index do |arr, index|
-      if arr == arr_of_threes[-1]
-        @and_setter = true
-      end
       word_string << create_substring(arr)
       description_index = arr_of_threes.length - index
       if description_index != 0
@@ -94,27 +90,38 @@ class Converter
 
   def self.create_substring(num_string_arr)
     sub_string = []
-    num_string_arr.each_with_index do |digit, index|
-      if index == 1
-        if digit == '1'
-          push_and(sub_string)
-          sub_string << NUMBER[[digit, num_string_arr[-1]].join('').to_i]
-          break
+    if num_string_arr.length == 3
+      num_string_arr.each_with_index do |digit, index|
+        if index == 1
+          if digit == '1'
+            puts [digit, num_string_arr[-1]].join('').to_i
+            puts NUMBER[[digit, num_string_arr[-1]].join('').to_i]
+            sub_string << NUMBER[[digit, num_string_arr[-1]].join('').to_i]
+            break
+          end
+          sub_string << TENS[digit.to_i]
+        elsif index == 2
+          sub_string << NUMBER[digit.to_i]
+        else
+          sub_string << "#{NUMBER[digit.to_i]} Hundred"
         end
-        push_and(sub_string)
-        sub_string << TENS[digit.to_i]
-      elsif index == 2
-        sub_string << NUMBER[digit.to_i]
-      else
-        sub_string << "#{NUMBER[digit.to_i]} Hundred"
       end
+    elsif num_string_arr.length == 2
+      if num_string_arr[0] == '1'
+        irregular_number = num_string_arr.join('')
+        NUMBER[irregular_number.to_i]
+      else
+        num_string_arr.each_with_index do |digit, index|
+          if index == 0
+            sub_string << TENS[digit.to_i]
+          else
+            sub_string << NUMBER[digit.to_i]
+          end
+        end
+      end
+    else
+      sub_string << NUMBER[num_string_arr[0].to_i]
     end
     sub_string
-  end
-
-  def self.push_and(sub_string)
-    if @and_setter
-      sub_string << 'and'
-    end
   end
 end
