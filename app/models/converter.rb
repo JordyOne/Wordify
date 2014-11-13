@@ -1,19 +1,15 @@
 class Converter
   def self.convert(number)
-    num_string = number.split('')
-    word_string = []
-    num_string.each_with_index do |digit, index|
-      if (num_string.length - index) == 2
-        word_string << TENS[digit.to_i]
-      else
-        if index == num_string.length
-          word_string << NUMBER[digit.to_i]
-        else
-          word_string << "#{NUMBER[digit.to_i]} #{DESCRIPTIONS[num_string.length - index]}"
-        end
-      end
+    formatted_number = format_number(number)
+    final_num_arr = []
+    if formatted_number.include?('.')
+      num_arr = formatted_number.split('.')
+      final_num_arr << before_decimal(num_arr[0])
+      final_num_arr << after_decimal(num_arr[1])
+    else
+      final_num_arr << before_decimal(formatted_number)
     end
-    word_string.join(' ')
+    final_num_arr.join(' ')
   end
 
   private
@@ -52,38 +48,73 @@ class Converter
   }
 
   DESCRIPTIONS = {
-      3 => "Hundred", #100
-      4 => "Thousand", #1000
-      7 => "Million", #1000000
+      2 => "Thousand", #1000
+      3 => "Million", #1000000
+      4 => "Billion", #1000000
+      5 => "Tillion", #1000000
+      6 => "Quadrillion", #1000000
+
   }
 
-
-  # I left these here to let you see a little bit of my process
-  def self.convert_single
-    NUMBER[@number]
+  def self.split_on_decimal(number)
+    number.split('.')
   end
 
-  def self.convert_tens
-    num_string = @number.to_s
-    ten_digit = TENS[num_string[0].to_i]
-    single_digit = NUMBER[num_string[1].to_i]
-    [ten_digit, single_digit].join(' ')
+  def self.after_decimal(number)
+    cents = number[0..1]
+    "and #{cents}/100"
   end
 
-  def self.convert_hundreds
-    num_string = @number.to_s
-    hundred_digit = NUMBER[num_string[0].to_i]
-    description = DESCRIPTIONS[num_string.length]
-    tens_digit = TENS[num_string[1].to_i]
-    single_digit = NUMBER[num_string[2].to_i]
-    "#{hundred_digit} #{description} and #{tens_digit} #{single_digit}"
+  def self.before_decimal(number)
+    num_arr = number.split('')
+    arr_of_threes = self.slice_num_arr(num_arr)
+    word_string = []
+    @and_setter = false
+
+    arr_of_threes.each_with_index do |arr, index|
+      if arr == arr_of_threes[-1]
+        @and_setter = true
+      end
+      word_string << create_substring(arr)
+      description_index = arr_of_threes.length - index
+      if description_index != 0
+        word_string << DESCRIPTIONS[description_index]
+      end
+    end
+    word_string.join(' ')
   end
 
-  def inject_and(arr)
-    # if index is one of the last two
-        # store the data and move them down
-        # inject 'and' string at the third to last position so that the join will appear properly.
+  def self.format_number(number)
+    number.gsub(/[^\d\.]/, '')
   end
 
+  def self.slice_num_arr(number)
+    number.each_slice(3).to_a
+  end
 
+  def self.create_substring(num_string_arr)
+    sub_string = []
+    num_string_arr.each_with_index do |digit, index|
+      if index == 1
+        if digit == '1'
+          push_and(sub_string)
+          sub_string << NUMBER[[digit, num_string_arr[-1]].join('').to_i]
+          break
+        end
+        push_and(sub_string)
+        sub_string << TENS[digit.to_i]
+      elsif index == 2
+        sub_string << NUMBER[digit.to_i]
+      else
+        sub_string << "#{NUMBER[digit.to_i]} Hundred"
+      end
+    end
+    sub_string
+  end
+
+  def self.push_and(sub_string)
+    if @and_setter
+      sub_string << 'and'
+    end
+  end
 end

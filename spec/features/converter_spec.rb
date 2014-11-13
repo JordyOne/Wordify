@@ -37,4 +37,13 @@ feature 'converter page' do
 
     expect(page).to have_content('Two Thousand Two Hundred and Twenty One')
   end
+
+  scenario 'class can correctly format number' do
+    visit root_path
+
+    fill_in :number, with: '2,221'
+    click_on 'Submit'
+
+    expect(page).to have_content('Two Thousand Two Hundred and Twenty One')
+  end
 end
